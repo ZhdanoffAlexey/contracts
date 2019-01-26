@@ -1,28 +1,6 @@
 pragma solidity ^0.4.9;
 
-contract SafeMath {
-  function safeMul(uint a, uint b) internal returns (uint) {
-    uint c = a * b;
-    assert(a == 0 || c / a == b);
-    return c;
-  }
-
-  function safeSub(uint a, uint b) internal returns (uint) {
-    assert(b <= a);
-    return a - b;
-  }
-
-  function safeAdd(uint a, uint b) internal returns (uint) {
-    uint c = a + b;
-    assert(c>=a && c>=b);
-    return c;
-  }
-
-  function assert(bool assertion) internal {
-    if (!assertion) throw;
-  }
-}
-
+import "Excalibur_DLL.sol";
 
 contract Token {
   /// @notice send `_value` token to `_to` from `msg.sender`
@@ -39,25 +17,25 @@ contract Token {
   function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {}
 }
 
-
-contract Excalibur is SafeMath {
+// Ex SC for Decentralized Liquidity Layer (DLL)
+// prototype from 01.27.19 (without tradeBalances)
+contract Excalibur_Ex is SafeMath {
 
   address public admin;
+  address public dllContract;
   bool public tradeState;
+  
 
   mapping (address => mapping (address => uint)) public tokens; // mapping of token addresses to mapping of account balances (token=0 means Ether)
-  mapping (address => mapping (bytes32 => bool)) public orders; // mapping of user accounts to mapping of order hashes to booleans (true = submitted by user, equivalent to offchain signature)
-  mapping (address => mapping (bytes32 => uint)) public orderFills; // mapping of user accounts to mapping of order hashes to uints (amount of order that has been filled)
 
-
-  event Order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address user, bytes32 hash);
-  event Cancel(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address user, uint8 v, bytes32 r, bytes32 s, bytes32 hash, string pair);
-  event Trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address get, address give, bytes32 hash, string pair);
+  event RequestOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address user, bytes32 hash);
+  event RequestCancel(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address user, uint8 v, bytes32 r, bytes32 s, bytes32 hash, string pair);
+  event RequestTrade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address get, address give, bytes32 hash, string pair);
   event Deposit(address token, address user, uint amount, uint balance);
   event Withdraw(address token, address user, uint amount, uint balance);
 
 
-  function Excalibur() {
+  function Excalibur_Ex() {
       admin = msg.sender;
       tradeState = true;
   }
@@ -118,31 +96,26 @@ contract Excalibur is SafeMath {
   }
 
   function order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce) {
-    bytes32 hash = sha3(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce);
-    orders[msg.sender][hash] = true;
-    Order(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, msg.sender, hash);
+    ExcaliburDLL dll = ExcaliburDLL(dllContract);
+    dll.order(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, admin);
   }
 
   function trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address user, uint8 v, bytes32 r, bytes32 s, uint amount, string pair) {
     // amount is in amountGet terms
-    bytes32 hash = sha3(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce);
-    if (!( (orders[user][hash] || ecrecover(sha3("\x19Ethereum Signed Message:\n32", hash),v,r,s) == user) && block.number <= expires && safeAdd(orderFills[user][hash], amount) <= amountGet)) throw;
-    tradeBalances(tokenGet, amountGet, tokenGive, amountGive, user, amount);
-    orderFills[user][hash] = safeAdd(orderFills[user][hash], amount);
-    Trade(tokenGet, amount, tokenGive, amountGive * amount / amountGet, user, msg.sender, hash, pair);
+    ExcaliburDLL dll = ExcaliburDLL(dllContract);
+    dll.trade(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, admin, user, v, r, s, amount, pair);
   }
 
-  function tradeBalances(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address user, uint amount) private {
-    tokens[tokenGet][msg.sender] = safeSub(tokens[tokenGet][msg.sender], amount);
-    tokens[tokenGet][user] = safeAdd(tokens[tokenGet][user], amount);
-    tokens[tokenGive][user] = safeSub(tokens[tokenGive][user], safeMul(amountGive, amount) / amountGet);
-    tokens[tokenGive][msg.sender] = safeAdd(tokens[tokenGive][msg.sender], safeMul(amountGive, amount) / amountGet);
-  }
+ // function tradeBalances(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address user, uint amount) private {
+ //   tokens[tokenGet][msg.sender] = safeSub(tokens[tokenGet][msg.sender], amount);
+ //   tokens[tokenGet][user] = safeAdd(tokens[tokenGet][user], amount);
+ //   tokens[tokenGive][user] = safeSub(tokens[tokenGive][user], safeMul(amountGive, amount) / amountGet);
+ //   tokens[tokenGive][msg.sender] = safeAdd(tokens[tokenGive][msg.sender], safeMul(amountGive, amount) / amountGet);
+ // }
+
 
   function cancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, uint8 v, bytes32 r, bytes32 s, string pair) {
-    bytes32 hash = sha3(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce);
-    if (!(orders[msg.sender][hash] || ecrecover(sha3("\x19Ethereum Signed Message:\n32", hash),v,r,s) == msg.sender)) throw;
-    orderFills[msg.sender][hash] = amountGet;
-    Cancel(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, msg.sender, v, r, s, hash, pair);
+    ExcaliburDLL dll = ExcaliburDLL(dllContract);
+    dll.cancelOrder(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, admin, v, r, s, pair);
   }
 }
