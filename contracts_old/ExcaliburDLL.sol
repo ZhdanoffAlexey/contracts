@@ -1,4 +1,4 @@
-pragma solidity ^0.4.9;
+pragma solidity >=0.4.25;
 
 contract SafeMath {
   function safeMul(uint a, uint b) internal returns (uint) {
@@ -56,10 +56,7 @@ contract ExcaliburDLL is AbstractExcaliburDLL {
   event Cancel(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, address user, uint8 v, bytes32 r, bytes32 s, bytes32 hash, string pair);
   event Trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange, address get, address give, bytes32 hash, string pair);
 
-  function ExcaliburDLL() {
-      admin = msg.sender;
-      tradeState = true;
-  }
+
 
   modifier onlyAdmin {
         if (msg.sender != admin) throw;
@@ -76,9 +73,8 @@ contract ExcaliburDLL is AbstractExcaliburDLL {
         _;
   }
 
-  function checkAdmin() onlyAdmin constant returns (bool) {
-    return true;
-  }
+//  function checkAdmin() onlyAdmin returns (bool) {
+  //  return true;
 
   function transferOwnership(address newAdmin) onlyAdmin {
     admin = newAdmin;

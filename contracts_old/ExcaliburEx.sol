@@ -1,6 +1,6 @@
-pragma solidity ^0.4.9;
+pragma solidity >=0.4.21;
 
-import "Excalibur_DLL.sol";
+import "./ExcaliburDLL.sol";
 
 contract Token {
   /// @notice send `_value` token to `_to` from `msg.sender`
@@ -19,7 +19,7 @@ contract Token {
 
 // Ex SC for Decentralized Liquidity Layer (DLL)
 // prototype from 01.27.19 (without tradeBalances)
-contract Excalibur_Ex is SafeMath {
+contract ExcaliburEx is SafeMath {
 
   address public admin;
   address public dllContract;
@@ -35,7 +35,7 @@ contract Excalibur_Ex is SafeMath {
   event Withdraw(address token, address user, uint amount, uint balance);
 
 
-  function Excalibur_Ex() {
+  function ExcaliburEx() {
       admin = msg.sender;
       tradeState = true;
   }
@@ -50,9 +50,9 @@ contract Excalibur_Ex is SafeMath {
         _;
   }
 
-  function checkAdmin() onlyAdmin constant returns (bool) {
-    return true;
-  }
+//   function checkAdmin() onlyAdmin returns (bool) {
+//     return true;
+//   }
 
   function transferOwnership(address newAdmin) onlyAdmin {
     admin = newAdmin;
@@ -91,7 +91,7 @@ contract Excalibur_Ex is SafeMath {
     Withdraw(token, msg.sender, amount, tokens[token][msg.sender]);
   }
 
-  function balanceOf(address token, address user) constant returns (uint) {
+  function balanceOf(address token, address user) returns (uint) {
     return tokens[token][user];
   }
 
