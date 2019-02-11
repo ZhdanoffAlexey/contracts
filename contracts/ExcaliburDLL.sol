@@ -100,14 +100,14 @@ contract ExcaliburDLL is AbstractExcaliburDLL {
     // Trade functions
     ////
     
+    //@note trading methods have been temporarily facilitated to simplify the development
+    
     function order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange) public exIsConnected {
         bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange));
         orders[exchange][msg.sender][hash] = true;
-        // Order(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange, msg.sender, hash);
     }
 
     function trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, address user, uint8 v, bytes32 r, bytes32 s, uint amount, string memory pair) public exIsConnected {
-        // // amount is in amountGet terms
         bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange));
         orderFills[exchange][user][hash] = SafeMath.add(orderFills[exchange][user][hash], amount);
         uint calcAmountGive = amountGive * amount / amountGet;
