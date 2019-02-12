@@ -40,6 +40,10 @@ contract ExcaliburEx {
         tradeState = state_;
     }
     
+    function setDllContract(address _dllContract) public onlyAdmin {
+        dllContract = _dllContract;
+    }
+    
     ////
     // Token functions
     ////
@@ -78,18 +82,18 @@ contract ExcaliburEx {
     // Trade functions
     ////
     
-    function order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce) public {
+    function callOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive) public {
         ExcaliburDLL dll = ExcaliburDLL(dllContract);
-        dll.order(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, admin);
+        require(dll.order(tokenGet, amountGet, tokenGive, amountGive, admin));
     }
 
-    function trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address user, uint8 v, bytes32 r, bytes32 s, uint amount, string memory pair) public {
+    function callTrade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint amount) public {
         ExcaliburDLL dll = ExcaliburDLL(dllContract);
-        dll.trade(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, admin, user, v, r, s, amount, pair);
+        require(dll.trade(tokenGet, amountGet, tokenGive, amountGive, admin, msg.sender, amount));
     }
     
-    function cancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, uint8 v, bytes32 r, bytes32 s, string memory pair) public {
+    function callCancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive) public {
         ExcaliburDLL dll = ExcaliburDLL(dllContract);
-        dll.cancelOrder(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, admin, v, r, s, pair);
+        require(dll.cancelOrder(tokenGet, amountGet, tokenGive, amountGive, admin));
   }
 }

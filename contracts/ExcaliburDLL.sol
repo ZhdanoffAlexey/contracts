@@ -2,12 +2,13 @@ pragma solidity >=0.4.25;
 
 import "./SafeMath.sol";
 
+
 contract AbstractExcaliburDLL {
-    function order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange) public {
+    function order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange) public returns(bool) {
     }
-    function trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, address user, uint8 v, bytes32 r, bytes32 s, uint amount, string memory pair) public {
+    function trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange, address user, uint amount) public returns(bool) {
     }
-    function cancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, uint8 v, bytes32 r, bytes32 s, string memory pair) public {
+    function cancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange) public returns(bool) {
     }
 }
 
@@ -28,7 +29,7 @@ contract ExcaliburDLL is AbstractExcaliburDLL {
     mapping (address => mapping (address => mapping (bytes32 => bool))) public orders; // orders[exchange_adress][user_adress][hash]
     mapping (address => mapping (address => mapping (bytes32 => uint))) public orderFills; // orderFills[exchange_adress][user_adress][count_of_currency]
     
-    event Order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, address user, bytes32 hash);
+    event Order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange, address maker, bytes32 hash);
     event Cancel(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, address user, uint8 v, bytes32 r, bytes32 s, bytes32 hash, string pair);
     event Trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange, address get, address give, bytes32 hash, string pair);
 
@@ -102,25 +103,28 @@ contract ExcaliburDLL is AbstractExcaliburDLL {
     
     //@note trading methods have been temporarily facilitated to simplify the development
     
-    function order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange) public exIsConnected {
-        bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange));
+    function order(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange) public exIsConnected returns(bool) {
+        bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, exchange));
         orders[exchange][msg.sender][hash] = true;
+        // Order(tokenGet, amountGet, tokenGive, amountGive, exchange, msg.sender, hash);
+        return true;
     }
 
-    function trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, address user, uint8 v, bytes32 r, bytes32 s, uint amount, string memory pair) public exIsConnected {
-        bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange));
+    function trade(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange, address user, uint amount) public exIsConnected returns(bool) {
+        bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, exchange));
         orderFills[exchange][user][hash] = SafeMath.add(orderFills[exchange][user][hash], amount);
         uint calcAmountGive = amountGive * amount / amountGet;
     
-        //Trade(tokenGet, amountGet, tokenGive, amountGive, exchange, get, give, bytes32 hash, string pair);
-
+        // Trade(tokenGet, amountGet, tokenGive, calcAmountGive, exchange, get, msg.sender, bytes32 hash, string pair);
+        return true;
     }
 
-    function cancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, uint expires, uint nonce, address exchange, uint8 v, bytes32 r, bytes32 s, string memory pair) public exIsConnected {
-        bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange));
+    function cancelOrder(address tokenGet, uint amountGet, address tokenGive, uint amountGive, address exchange) public exIsConnected returns(bool) {
+        // bytes32 hash = keccak256(abi.encodePacked(this, tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange));
         //if (!(orders[exchange][msg.sender][hash] || ecrecover(sha3("\x19Ethereum Signed Message:\n32", hash),v,r,s) == msg.sender)) throw;
         //orderFills[exchange][msg.sender][hash] = amountGet;
         //Cancel(tokenGet, amountGet, tokenGive, amountGive, expires, nonce, exchange, msg.sender, v, r, s, hash, pair);
+        return true;
     }
 }
 
