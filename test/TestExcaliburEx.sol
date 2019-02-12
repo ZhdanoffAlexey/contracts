@@ -25,22 +25,17 @@ contract TestExcaliburEx {
         Assert.equal(ex.admin(), tx.origin, "сontract should have true administrator");
     }
 
-    // function testChangingTradeState() public {
-    //     ExcaliburEx ex = ExcaliburEx(DeployedAddresses.ExcaliburEx());
-    //     Assert.equal(ex.tradeState(), false, "first trade status off on deployed contract");
-
-    //     ExcaliburDLL newEx = new ExcaliburEx();
-    //     Assert.equal(newEx.tradeState(), false, "first trade status off");
-    //     Assert.equal(newEx.currentTradeState(), false, "currentTradeState function should return false");
-    //     newEx.changeTradeState(true);
-    //     Assert.equal(newEx.tradeState(), true, "then trade status on ");
-    //     Assert.equal(newEx.currentTradeState(), true, "currentTradeState function should return true");
-    // }
+    function testChangingTradeState() public {
+        ExcaliburEx newEx = new ExcaliburEx();
+        Assert.equal(newEx.tradeState(), false, "first trade status off");
+        newEx.changeTradeState(true);
+        Assert.equal(newEx.tradeState(), true, "then trade status on ");
+    }
 
     function testSetDllContract() public {
-        ExcaliburEx ex = ExcaliburEx(DeployedAddresses.ExcaliburEx());
-        ex.setDllContract(0x0000000000000000000000000000000000000001);
-        Assert.equal(ex.dllContract(), 0x0000000000000000000000000000000000000001, "setDllContract function should return true dll contract");
+        ExcaliburEx newEx = new ExcaliburEx();
+        newEx.setDllContract(0x0000000000000000000000000000000000000001);
+        Assert.equal(newEx.dllContract(), 0x0000000000000000000000000000000000000001, "setDllContract function should return true dll contract");
     }
     
     function testTransferOwnership() public {
