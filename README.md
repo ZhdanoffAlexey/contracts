@@ -1,9 +1,11 @@
 # Smart contracts
-# for DEX Protocol With Global Liquidity Layer
 Excalibur solidity smart contracts
 
+[![](https://img.shields.io/badge/project-Excalibur__-ef5777.svg?style=popout-square)](https://github.com/xclbrio)
+![GitHub](https://img.shields.io/github/license/xclbrio/ipfsWebDist.svg?style=flat-square)
 ![GitHub](https://img.shields.io/badge/solidity-0.5.0-383838.svg?style=popout-square)
 [![Build Status](https://travis-ci.com/ZhdanoffAlexey/contracts.svg?branch=master)](https://travis-ci.com/ZhdanoffAlexey/contracts)
+[![Gitter](https://img.shields.io/gitter/room/:user/:repo.svg?style=flat-square)](https://gitter.im/xclbrio/Lobby)
 
 Communication channels
 ======================
