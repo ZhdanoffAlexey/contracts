@@ -1,4 +1,5 @@
-# contracts
+# Smart contracts
+# for DEX Protocol With Global Liquidity Layer
 Excalibur solidity smart contracts
 
 ![GitHub](https://img.shields.io/badge/solidity-0.5.0-383838.svg?style=popout-square)
